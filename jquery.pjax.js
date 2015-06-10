@@ -299,36 +299,42 @@ function pjax(options) {
 
     if (container.title) document.title = container.title
 
-    fire('pjax:beforeReplace', [container.contents, options], {
+    // including the xhr as an argument to beforeReplace, which is a change from the defunkt/jquery-pjax implementation
+    // also passing along the remainder of this function body as a callback to be asynchronously invoked
+    // upon successful loading of required assets (CSS / JS)
+    fire('pjax:beforeReplace', [container.contents, xhr, options, function () {
+        context.html(container.contents)
+
+        // FF bug: Won't autofocus fields that are inserted via JS.
+        // This behavior is incorrect. So if theres no current focus, autofocus
+        // the last field.
+        //
+        // http://www.w3.org/html/wg/drafts/html/master/forms.html
+        var autofocusEl = context.find('input[autofocus], textarea[autofocus]').last()[0]
+        if (autofocusEl && document.activeElement !== autofocusEl) {
+            autofocusEl.focus();
+        }
+
+        executeScriptTags(container.scripts)
+
+        var scrollTo = options.scrollTo
+
+        // Ensure browser scrolls to the element referenced by the URL anchor
+        if (hash) {
+            var name = decodeURIComponent(hash.slice(1))
+            var target = document.getElementById(name) || document.getElementsByName(name)[0]
+            if (target) scrollTo = $(target).offset().top
+        }
+
+        if (typeof scrollTo == 'number') $(window).scrollTop(scrollTo)
+
+        fire('pjax:success', [data, status, xhr, options])
+    }], {
       state: pjax.state,
       previousState: previousState
     })
-    context.html(container.contents)
 
-    // FF bug: Won't autofocus fields that are inserted via JS.
-    // This behavior is incorrect. So if theres no current focus, autofocus
-    // the last field.
-    //
-    // http://www.w3.org/html/wg/drafts/html/master/forms.html
-    var autofocusEl = context.find('input[autofocus], textarea[autofocus]').last()[0]
-    if (autofocusEl && document.activeElement !== autofocusEl) {
-      autofocusEl.focus();
-    }
 
-    executeScriptTags(container.scripts)
-
-    var scrollTo = options.scrollTo
-
-    // Ensure browser scrolls to the element referenced by the URL anchor
-    if (hash) {
-      var name = decodeURIComponent(hash.slice(1))
-      var target = document.getElementById(name) || document.getElementsByName(name)[0]
-      if (target) scrollTo = $(target).offset().top
-    }
-
-    if (typeof scrollTo == 'number') $(window).scrollTop(scrollTo)
-
-    fire('pjax:success', [data, status, xhr, options])
   }
 
 
