@@ -267,6 +267,8 @@ function pjax(options) {
       container.url = url.href
     }
 
+    var $head = $(parseHTML(container.contents.match(/<head[^>]*>([\s\S.]*)<\/head>/i)[0]))
+
     // If there is a layout version mismatch, hard load the new url
     if (currentVersion && latestVersion && currentVersion !== latestVersion) {
       locationReplace(container.url)
@@ -275,6 +277,14 @@ function pjax(options) {
 
     // If the new response is missing a body, hard load the page
     if (!container.contents) {
+      locationReplace(container.url)
+      return
+    }
+
+    // NPR addition
+    // If the new response lacks an "npr-pjax" meta tag in the head, hard load the page
+    // TODO: Do something else so that we can roll back the PJAX transition and open container.url in a new tab
+    if ($head.find('meta[name="npr-pjax"]').length > 0) {
       locationReplace(container.url)
       return
     }
