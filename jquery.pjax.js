@@ -267,7 +267,7 @@ function pjax(options) {
       container.url = url.href
     }
 
-    var $head = $(parseHTML(container.data.match(/<head[^>]*>([\s\S.]*)<\/head>/i)[0]))
+    var $head = $(parseHTML(data.match(/<head[^>]*>([\s\S.]*)<\/head>/i)[0]))
 
     // If there is a layout version mismatch, hard load the new url
     if (currentVersion && latestVersion && currentVersion !== latestVersion) {
