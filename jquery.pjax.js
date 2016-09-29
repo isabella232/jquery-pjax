@@ -325,6 +325,8 @@ function pjax(options) {
             autofocusEl.focus();
         }
 
+        // Remove all scripts that were dynamically inserted on a previous pjax navigation
+        $('script[src][data-pjax-script]').remove()
         executeScriptTags(container.scripts)
 
         var scrollTo = options.scrollTo
@@ -786,6 +788,10 @@ function executeScriptTags(scripts) {
     var type = $(this).attr('type')
     if (type) script.type = type
     script.src = $(this).attr('src')
+
+    // Tag all inserted scripts with a trackable attribute so we can clean them up later
+    $(script).attr('data-pjax-script', true)
+
     document.head.appendChild(script)
   })
 }
