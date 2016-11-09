@@ -313,7 +313,12 @@ function pjax(options) {
     // also passing along the remainder of this function body as a callback to be asynchronously invoked
     // upon successful loading of required assets (CSS / JS)
     fire('pjax:beforeReplace', [container.contents, xhr, options, function () {
-        context.html(container.contents)
+        try {
+          context.html(container.contents)
+        } catch (e) {
+          // a JS error can be due to PJAX conditions, in which case hard-reloading might fix it
+          window.location.reload()
+        }
 
         // FF bug: Won't autofocus fields that are inserted via JS.
         // This behavior is incorrect. So if theres no current focus, autofocus
@@ -495,7 +500,13 @@ function onPjaxPopstate(event) {
           previousState: previousState
         })
         container.trigger(beforeReplaceEvent, [contents, options])
-        container.html(contents)
+
+        try {
+          // a JS error can be due to PJAX conditions, in which case hard-reloading might fix it
+          container.html(contents)
+        } catch (e) {
+          window.location.reload();
+        }
 
         container.trigger('pjax:end', [null, options])
       } else {
