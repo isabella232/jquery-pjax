@@ -257,7 +257,19 @@ function pjax(options) {
       $.pjax.defaults.version() :
       $.pjax.defaults.version
 
+    // If the response is not an HTML web page, hard load the new URL
+    var contentType = xhr.getResponseHeader('Content-Type')
+    if (!contentType || contentType.indexOf('text/html') === -1) {
+      locationReplace(options.requestUrl)
+      return
+    }
+
+    // If there is a layout version mismatch, hard load the new url
     var latestVersion = xhr.getResponseHeader('X-PJAX-Version')
+    if (currentVersion && latestVersion && currentVersion !== latestVersion) {
+      locationReplace(options.requestUrl)
+      return
+    }
 
     var container = extractContainer(data, xhr, options)
 
@@ -268,12 +280,6 @@ function pjax(options) {
     }
 
     var $head = $(parseHTML(data.match(/<head[^>]*>([\s\S.]*)<\/head>/i)[0]))
-
-    // If there is a layout version mismatch, hard load the new url
-    if (currentVersion && latestVersion && currentVersion !== latestVersion) {
-      locationReplace(container.url)
-      return
-    }
 
     // If the new response is missing a body, hard load the page
     if (!container.contents) {
