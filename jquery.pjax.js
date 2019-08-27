@@ -290,7 +290,14 @@ function pjax(options) {
     // NPR addition
     // If the new response lacks an "npr-pjax" meta tag in the head, hard load the page
     // TODO: Do something else so that we can roll back the PJAX transition and open container.url in a new tab
-    if ($head.find('meta[name="npr-pjax"]').length > 0) {
+    if (!$head.find(function (el) {
+      return el &&
+        typeof el === 'object' &&
+        el.tagName &&
+        el.tagName === 'META' &&
+        el.name &&
+        el.name === 'npr-pjax';
+    })) {
       locationReplace(container.url)
       return
     }
@@ -480,11 +487,14 @@ function onPjaxPopstate(event) {
         cachePop(direction, previousState.id, cloneContents(container))
       }
 
-      var popstateEvent = $.Event('pjax:popstate', {
-        state: state,
-        direction: direction
-      })
-      container.trigger(popstateEvent)
+      const popstateEvent = new CustomEvent('pjax:popstate', {
+        'detail': {
+            'state': state,
+            'direction': direction,
+        }
+    });
+
+    document.dispatchEvent(popstateEvent);
 
       var options = {
         id: state.id,
