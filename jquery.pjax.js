@@ -290,7 +290,7 @@ function pjax(options) {
     // NPR addition
     // If the new response lacks an "npr-pjax" meta tag in the head, hard load the page
     // TODO: Do something else so that we can roll back the PJAX transition and open container.url in a new tab
-    if (!$head.find(function (el) {
+    if ($head && !$head.toArray().find(function (el) {
       return el &&
         typeof el === 'object' &&
         el.tagName &&
